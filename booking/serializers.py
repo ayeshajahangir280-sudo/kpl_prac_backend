@@ -170,6 +170,14 @@ class CreateBookingSerializer(serializers.Serializer):
         try:
             with transaction.atomic():
                 locked_slot = Slot.objects.select_for_update().get(pk=slot.pk, active=True, court__active=True)
+                active_bookings = Booking.objects.select_for_update().filter(
+                    team=team,
+                    status=Booking.Status.CONFIRMED,
+                )
+                if active_bookings.count() >= 2:
+                    raise serializers.ValidationError({"detail": "Your team can book a maximum of 2 slots."})
+                if active_bookings.filter(slot_date=locked_slot.date).exists():
+                    raise serializers.ValidationError({"detail": "Your team can book only 1 slot per day."})
                 booking = Booking.objects.create(
                     team=team,
                     slot=locked_slot,
