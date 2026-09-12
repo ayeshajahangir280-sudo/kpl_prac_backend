@@ -43,7 +43,10 @@ class AdminTeamViewSet(viewsets.ModelViewSet):
 class AdminCourtViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminRole]
     serializer_class = CourtSerializer
-    queryset = Court.objects.all()
+
+    def get_queryset(self):
+        Court.objects.get_or_create(court_number=1, defaults={"active": True})
+        return Court.objects.all()
 
 
 class AdminSlotViewSet(viewsets.ModelViewSet):
