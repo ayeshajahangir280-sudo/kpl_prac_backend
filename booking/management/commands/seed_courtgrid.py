@@ -4,7 +4,7 @@ from datetime import date, time
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 
-from booking.models import Booking, Court, Slot, User
+from booking.models import Court, Slot, User
 
 
 class Command(BaseCommand):
@@ -51,9 +51,6 @@ class Command(BaseCommand):
             number: Court.objects.get_or_create(court_number=number, defaults={"active": True})[0]
             for number in court_numbers
         }
-        Court.objects.exclude(court_number__in=court_numbers).update(active=False)
-
-        desired_slot_ids = []
         count = 0
         for slot_date, court_number, start_time, end_time in desired_slots:
             slot, made = Slot.objects.get_or_create(
@@ -66,16 +63,7 @@ class Command(BaseCommand):
             if not slot.active:
                 slot.active = True
                 slot.save(update_fields=["active"])
-            desired_slot_ids.append(slot.id)
             count += int(made)
-
-        extra_slots = Slot.objects.exclude(id__in=desired_slot_ids)
-        booked_extra_slot_ids = Booking.objects.filter(
-            slot__in=extra_slots,
-            status=Booking.Status.CONFIRMED,
-        ).values_list("slot_id", flat=True)
-        extra_slots.exclude(id__in=booked_extra_slot_ids).delete()
-        extra_slots.filter(id__in=booked_extra_slot_ids).update(active=False)
         action = "Created" if created else "Updated"
         self.stdout.write(
             self.style.SUCCESS(
