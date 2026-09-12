@@ -1,4 +1,4 @@
-# CourtGrid Backend
+# KPL 7.0 Backend
 
 Django REST Framework backend for the Sports Court Slot Booking System.
 
@@ -11,7 +11,7 @@ python -m venv .venv
 pip install -r requirements.txt
 copy .env.example .env
 python manage.py migrate
-python manage.py seed_courtgrid
+python manage.py seed_kpl70
 python manage.py runserver
 ```
 

@@ -1,4 +1,4 @@
-# Generated for CourtGrid.
+# Generated for KPL 7.0.
 import django.contrib.auth.models
 import django.contrib.auth.validators
 import django.db.models.deletion

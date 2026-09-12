@@ -6,7 +6,7 @@ from .models import Booking, Court, Slot, Team, User
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
-    fieldsets = UserAdmin.fieldsets + (("CourtGrid", {"fields": ("role",)}),)
+    fieldsets = UserAdmin.fieldsets + (("KPL 7.0", {"fields": ("role",)}),)
     list_display = ("username", "email", "role", "is_active", "is_staff")
 
 
