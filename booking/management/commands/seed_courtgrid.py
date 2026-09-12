@@ -19,9 +19,13 @@ class Command(BaseCommand):
             username=username,
             defaults={"email": email, "role": User.Role.ADMIN, "is_staff": True, "is_superuser": True},
         )
-        if created:
-            admin.set_password(password)
-            admin.save()
+        admin.email = email
+        admin.role = User.Role.ADMIN
+        admin.is_active = True
+        admin.is_staff = True
+        admin.is_superuser = True
+        admin.set_password(password)
+        admin.save()
 
         courts = [Court.objects.get_or_create(court_number=number, defaults={"active": True})[0] for number in (2, 3, 4)]
         slot_days = [date(2026, 9, 16), date(2026, 9, 17)]
@@ -38,4 +42,9 @@ class Command(BaseCommand):
                         defaults={"active": True},
                     )
                     count += int(made)
-        self.stdout.write(self.style.SUCCESS(f"Seed complete. Created {count} new slots. Admin username: {username}"))
+        action = "Created" if created else "Updated"
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Seed complete. {action} admin account, created {count} new slots. Admin username: {username}"
+            )
+        )
