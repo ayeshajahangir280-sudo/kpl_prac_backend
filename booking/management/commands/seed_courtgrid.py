@@ -1,14 +1,13 @@
 import os
-from datetime import date, time
 
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 
-from booking.models import Court, Slot, User
+from booking.models import User
 
 
 class Command(BaseCommand):
-    help = "Seed admin account, courts, and the initial September 2026 slots."
+    help = "Create or reset the default admin account."
 
     def handle(self, *args, **options):
         username = os.getenv("DJANGO_SUPERUSER_USERNAME", "admin")
@@ -27,46 +26,7 @@ class Command(BaseCommand):
         admin.set_password(password)
         admin.save()
 
-        desired_slots = [
-            (date(2026, 9, 16), 2, time(21, 0), time(22, 0)),
-            (date(2026, 9, 16), 2, time(22, 0), time(23, 0)),
-            (date(2026, 9, 16), 2, time(23, 0), time(0, 0)),
-            (date(2026, 9, 16), 3, time(21, 0), time(22, 0)),
-            (date(2026, 9, 16), 3, time(22, 0), time(23, 0)),
-            (date(2026, 9, 16), 3, time(23, 0), time(0, 0)),
-            (date(2026, 9, 16), 4, time(21, 0), time(22, 0)),
-            (date(2026, 9, 16), 4, time(22, 0), time(23, 0)),
-            (date(2026, 9, 16), 4, time(23, 0), time(0, 0)),
-            (date(2026, 9, 17), 2, time(20, 0), time(21, 0)),
-            (date(2026, 9, 17), 2, time(22, 0), time(23, 0)),
-            (date(2026, 9, 17), 3, time(20, 0), time(21, 0)),
-            (date(2026, 9, 17), 4, time(20, 0), time(21, 0)),
-            (date(2026, 9, 17), 1, time(20, 0), time(21, 0)),
-            (date(2026, 9, 17), 1, time(21, 0), time(22, 0)),
-            (date(2026, 9, 17), 1, time(22, 0), time(23, 0)),
-            (date(2026, 9, 17), 1, time(23, 0), time(0, 0)),
-        ]
-        court_numbers = sorted({court_number for _, court_number, _, _ in desired_slots})
-        courts = {
-            number: Court.objects.get_or_create(court_number=number, defaults={"active": True})[0]
-            for number in court_numbers
-        }
-        count = 0
-        for slot_date, court_number, start_time, end_time in desired_slots:
-            slot, made = Slot.objects.get_or_create(
-                date=slot_date,
-                court=courts[court_number],
-                start_time=start_time,
-                end_time=end_time,
-                defaults={"active": True},
-            )
-            if not slot.active:
-                slot.active = True
-                slot.save(update_fields=["active"])
-            count += int(made)
         action = "Created" if created else "Updated"
         self.stdout.write(
-            self.style.SUCCESS(
-                f"Seed complete. {action} admin account, created {count} new slots. Admin username: {username}"
-            )
+            self.style.SUCCESS(f"Seed complete. {action} admin account. Admin username: {username}")
         )
