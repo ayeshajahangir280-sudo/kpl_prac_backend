@@ -22,6 +22,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 class TeamSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
+    team_name = serializers.CharField(required=False, allow_blank=True)
+    owner_name = serializers.CharField(required=False, allow_blank=True)
     username = serializers.CharField(write_only=True)
     email = serializers.EmailField(write_only=True, required=False, allow_blank=True)
     password = serializers.CharField(write_only=True, required=False, allow_blank=True, min_length=8)
@@ -52,6 +54,8 @@ class TeamSerializer(serializers.ModelSerializer):
         is_active = validated_data.pop("is_active", True)
         if not password:
             raise serializers.ValidationError({"password": "Password is required when creating a team owner."})
+        team_name = validated_data.pop("team_name", "") or username
+        owner_name = validated_data.pop("owner_name", "") or username
         user = User.objects.create_user(
             username=username,
             email=email,
@@ -59,7 +63,7 @@ class TeamSerializer(serializers.ModelSerializer):
             role=User.Role.TEAM_OWNER,
             is_active=is_active,
         )
-        return Team.objects.create(user=user, **validated_data)
+        return Team.objects.create(user=user, team_name=team_name, owner_name=owner_name, **validated_data)
 
     def update(self, instance, validated_data):
         user = instance.user
