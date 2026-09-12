@@ -10,7 +10,7 @@ load_dotenv(BASE_DIR / ".env")
 
 
 def comma_separated_env(name, default=""):
-    return [value.strip() for value in os.getenv(name, default).split(",") if value.strip()]
+    return [value.strip().rstrip("/") for value in os.getenv(name, default).split(",") if value.strip()]
 
 
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-only-change-me")
@@ -82,7 +82,9 @@ USE_TZ = True
 STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+print("RAW CORS ENV =", os.getenv("CORS_ALLOWED_ORIGINS"))
 CORS_ALLOWED_ORIGINS = comma_separated_env("CORS_ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")
+CSRF_TRUSTED_ORIGINS = comma_separated_env("CSRF_TRUSTED_ORIGINS")
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
