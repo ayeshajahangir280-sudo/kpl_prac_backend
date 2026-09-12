@@ -13,6 +13,16 @@ def comma_separated_env(name, default=""):
     return [value.strip().rstrip("/") for value in os.getenv(name, default).split(",") if value.strip()]
 
 
+def origin_env(name, default=""):
+    origins = []
+    for value in comma_separated_env(name, default):
+        if value.startswith(("http://", "https://")):
+            origins.append(value)
+        else:
+            origins.extend([f"http://{value}", f"https://{value}"])
+    return list(dict.fromkeys(origins))
+
+
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-only-change-me")
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 ALLOWED_HOSTS = comma_separated_env("ALLOWED_HOSTS", "localhost,127.0.0.1,testserver")
@@ -83,8 +93,8 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 print("RAW CORS ENV =", os.getenv("CORS_ALLOWED_ORIGINS"))
-CORS_ALLOWED_ORIGINS = comma_separated_env("CORS_ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")
-CSRF_TRUSTED_ORIGINS = comma_separated_env("CSRF_TRUSTED_ORIGINS")
+CORS_ALLOWED_ORIGINS = origin_env("CORS_ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")
+CSRF_TRUSTED_ORIGINS = origin_env("CSRF_TRUSTED_ORIGINS")
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
